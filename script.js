@@ -166,11 +166,16 @@ class QuizApp {
             this.questions = this.initializeK1K2Questions();
             document.getElementById('quizTitle').textContent = 'Quiz K1 & K2 - Media Streaming';
             this.showToast('K1 & K2 Quiz gestartet - 15 Fragen', 'success');
+        } else if (chapter === 'k3') {
+            this.questions = this.initializeK3Questions();
+            document.getElementById('quizTitle').textContent = 'Quiz K3 - Erweiterte Streaming-Technologien';
+            this.showToast('K3 Quiz geladen', 'success');
         }
 
         // Error handling for empty chapters
         if (this.questions.length === 0) {
-            this.showToast('Fehler: Keine Fragen für dieses Kapitel gefunden!', 'error');
+            this.showToast('Keine Fragen für dieses Kapitel vorhanden. Bitte Fragen bereitstellen.', 'warning');
+            this.showLandingPage();
             return;
         }
 
