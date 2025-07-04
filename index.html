@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz K1_K2 - Media Streaming</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Landing Page Menu -->
+        <div id="landingPage" class="landing-page">
+            <header class="landing-header">
+                <h1>Media Streaming Quiz</h1>
+                <p class="subtitle">Wählen Sie ein Kapitel aus:</p>
+            </header>
+            
+            <main class="chapter-selection">
+                <div class="chapter-card" data-chapter="k1k2">
+                    <div class="chapter-icon">📚</div>
+                    <h2>Kapitel K1 & K2</h2>
+                    <p>Media Streaming Grundlagen</p>
+                    <ul class="chapter-topics">
+                        <li>Streaming Probleme & Lösungen</li>
+                        <li>Netztechnologien & ASP</li>
+                        <li>Geschäftsmodelle</li>
+                        <li>TCP/UDP Protokolle</li>
+                    </ul>
+                    <span class="question-count">15 Fragen</span>
+                </div>
+                
+                <div class="chapter-card" data-chapter="k3">
+                    <div class="chapter-icon">🎥</div>
+                    <h2>Kapitel K3</h2>
+                    <p>Erweiterte Streaming-Technologien</p>
+                    <ul class="chapter-topics">
+                        <li>HTML5 Video & RTSP</li>
+                        <li>Progressive Download</li>
+                        <li>Adaptive Bitrate Streaming</li>
+                        <li>Streaming-Optimierungen</li>
+                    </ul>
+                    <span class="question-count">12 Fragen</span>
+                </div>
+            </main>
+        </div>
+
+        <!-- Quiz Interface (initially hidden) -->
+        <div id="quizInterface" class="quiz-interface" style="display: none;">
+            <header>
+                <div class="quiz-header-top">
+                    <button id="backToMenuBtn" class="back-btn">← Zurück zum Menü</button>
+                    <h1 id="quizTitle">Quiz - Media Streaming</h1>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                    <span class="progress-text" id="progressText">Frage 1 von 15</span>
+                </div>
+            </header>
+
+            <main id="quizContainer">
+                <!-- Quiz questions will be dynamically loaded here -->
+            </main>
+
+            <footer>
+                <div class="navigation">
+                    <button id="prevBtn" class="nav-btn" disabled>Zurück</button>
+                    <button id="checkBtn" class="nav-btn check-btn">Antworten prüfen</button>
+                    <button id="resetBtn" class="nav-btn reset-btn">Zurücksetzen</button>
+                    <button id="nextBtn" class="nav-btn">Weiter</button>
+                </div>
+                <div class="quiz-info">
+                    <p>Alle Antworten werden automatisch gespeichert</p>
+                </div>
+            </footer>
+        </div>
+
+        <!-- Results Modal -->
+        <div id="resultsModal" class="modal">
+            <div class="modal-content">
+                <h2>Quiz Ergebnisse</h2>
+                <div id="resultsContent"></div>
+                <div class="modal-actions">
+                    <button id="reviewBtn" class="btn-primary">Antworten überprüfen</button>
+                    <button id="restartBtn" class="btn-secondary">Quiz wiederholen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
