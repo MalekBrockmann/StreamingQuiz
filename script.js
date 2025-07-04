@@ -49,41 +49,7 @@ class QuizApp {
     }
 
     setupKeyboardNavigation() {
-        document.addEventListener('keydown', (e) => {
-            // Only handle keyboard navigation when quiz is active
-            if (document.getElementById('quizInterface').style.display === 'none') return;
-            
-            switch(e.key) {
-                case 'ArrowLeft':
-                    if (e.ctrlKey) {
-                        e.preventDefault();
-                        this.prevQuestion();
-                    }
-                    break;
-                case 'ArrowRight':
-                    if (e.ctrlKey) {
-                        e.preventDefault();
-                        this.nextQuestion();
-                    }
-                    break;
-                case 'Enter':
-                    if (e.ctrlKey) {
-                        e.preventDefault();
-                        this.checkCurrentAnswers();
-                    }
-                    break;
-                case 'Escape':
-                    e.preventDefault();
-                    this.showLandingPage();
-                    break;
-                case 'r':
-                    if (e.ctrlKey) {
-                        e.preventDefault();
-                        this.resetCurrentQuestion();
-                    }
-                    break;
-            }
-        });
+        // Keyboard navigation removed for simpler user experience
     }
 
     initializeLandingPage() {
@@ -93,67 +59,21 @@ class QuizApp {
     }
 
     addKeyboardShortcutsInfo() {
-        // Add a small info box about keyboard shortcuts
-        const shortcutsInfo = document.createElement('div');
-        shortcutsInfo.className = 'shortcuts-info';
-        shortcutsInfo.innerHTML = `
-            <div style="position: fixed; bottom: 20px; left: 20px; background: rgba(255,255,255,0.9); 
-                        padding: 15px; border-radius: 10px; font-size: 0.9rem; max-width: 300px;
-                        box-shadow: 0 5px 15px rgba(0,0,0,0.1); backdrop-filter: blur(10px);">
-                <h4 style="margin: 0 0 10px 0; color: #333;">⌨️ Tastenkürzel:</h4>
-                <div style="color: #666;">
-                    <div><strong>Ctrl + ←/→</strong> Navigation</div>
-                    <div><strong>Ctrl + Enter</strong> Prüfen</div>
-                    <div><strong>Ctrl + R</strong> Reset</div>
-                    <div><strong>Esc</strong> Zurück zum Menü</div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(shortcutsInfo);
+        // Keyboard shortcuts info removed for cleaner interface
     }
 
     setupLandingPageEventListeners() {
-        // Chapter selection with enhanced feedback
+        // Simple chapter selection
         document.querySelectorAll('.chapter-card').forEach(card => {
             card.addEventListener('click', () => {
                 const chapter = card.dataset.chapter;
-                card.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.startChapter(chapter);
-                }, 150);
-            });
-
-            // Add ripple effect
-            card.addEventListener('mousedown', (e) => {
-                const ripple = document.createElement('div');
-                const rect = card.getBoundingClientRect();
-                const size = Math.max(rect.width, rect.height);
-                const x = e.clientX - rect.left - size / 2;
-                const y = e.clientY - rect.top - size / 2;
-                
-                ripple.style.cssText = `
-                    position: absolute;
-                    width: ${size}px;
-                    height: ${size}px;
-                    left: ${x}px;
-                    top: ${y}px;
-                    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
-                    border-radius: 50%;
-                    transform: scale(0);
-                    animation: ripple 0.6s ease-out;
-                    pointer-events: none;
-                    z-index: 1;
-                `;
-                
-                card.appendChild(ripple);
-                setTimeout(() => ripple.remove(), 600);
+                this.startChapter(chapter);
             });
         });
 
         // Back to menu button
         document.getElementById('backToMenuBtn').addEventListener('click', () => {
             this.showLandingPage();
-            this.showToast('Zurück zum Hauptmenü', 'info');
         });
     }
 
@@ -165,16 +85,14 @@ class QuizApp {
         if (chapter === 'k1k2') {
             this.questions = this.initializeK1K2Questions();
             document.getElementById('quizTitle').textContent = 'Quiz K1 & K2 - Media Streaming';
-            this.showToast('K1 & K2 Quiz gestartet - 15 Fragen', 'success');
         } else if (chapter === 'k3') {
             this.questions = this.initializeK3Questions();
             document.getElementById('quizTitle').textContent = 'Quiz K3 - Erweiterte Streaming-Technologien';
-            this.showToast('K3 Quiz geladen', 'success');
         }
 
         // Error handling for empty chapters
         if (this.questions.length === 0) {
-            this.showToast('Keine Fragen für dieses Kapitel vorhanden. Bitte Fragen bereitstellen.', 'warning');
+            alert('Keine Fragen für dieses Kapitel vorhanden.');
             this.showLandingPage();
             return;
         }
@@ -187,26 +105,16 @@ class QuizApp {
         const landingPage = document.getElementById('landingPage');
         const quizInterface = document.getElementById('quizInterface');
         
-        // Smooth transition
-        quizInterface.style.animation = 'fadeOut 0.3s ease';
-        setTimeout(() => {
-            quizInterface.style.display = 'none';
-            landingPage.style.display = 'flex';
-            landingPage.style.animation = 'fadeInUp 0.6s ease';
-        }, 300);
+        quizInterface.style.display = 'none';
+        landingPage.style.display = 'flex';
     }
 
     showQuizInterface() {
         const landingPage = document.getElementById('landingPage');
         const quizInterface = document.getElementById('quizInterface');
         
-        // Smooth transition
-        landingPage.style.animation = 'fadeOut 0.3s ease';
-        setTimeout(() => {
-            landingPage.style.display = 'none';
-            quizInterface.style.display = 'flex';
-            quizInterface.style.animation = 'slideInFromRight 0.6s ease';
-        }, 300);
+        landingPage.style.display = 'none';
+        quizInterface.style.display = 'flex';
     }
 
     initializeK1K2Questions() {
@@ -456,7 +364,219 @@ class QuizApp {
 
     initializeK3Questions() {
         return [
-            // K3 Fragen werden hier hinzugefügt, wenn vom Benutzer bereitgestellt
+            {
+                id: 16,
+                type: 'true-false-table',
+                title: 'Was versteht man unter dem "secure level" eines Empfangs Puffers im Falle des progressiven Media-Download? Welche der folgenden Aussagen sind richtig?',
+                instruction: 'Bewerten Sie jede Aussage als richtig oder falsch.',
+                statements: [
+                    { text: 'Der Puffer muss hinreichend gefüllt sein, damit der Player gemäß der Wiedeholrate unter Berücksichtigung der schwankenden Übertragungsrate kontinuierlich Frames auslesen kann', correct: true },
+                    { text: 'Der Slow-Start Algorithmus muss zur Bestimmung des secure-levels abgeschlossen sein', correct: true },
+                    { text: 'Der secure-level wird im Zuge des Slow-Start Algorithmus ermittelt', correct: false },
+                    { text: 'Der secure-level legt die Obergrenze des Puffers fest', correct: false }
+                ]
+            },
+            {
+                id: 17,
+                type: 'true-false-table',
+                title: 'Welche der folgenden Aussagen sind in Bezug auf Protokolle und Streaming-Methoden richtig (live-, adaptive-, und progressive)?',
+                instruction: 'Bewerten Sie jede Aussage als richtig oder falsch.',
+                statements: [
+                    { text: 'http kann nur für progressive Download eingesetzt werden', correct: false },
+                    { text: 'Live-Streaming verwendet IP anstatt UDP', correct: false },
+                    { text: 'RTSP kann bei allen Streaming-Methoden eingesetzt werden', correct: true },
+                    { text: 'A/V Streaming über HTML5 ist nur bei progressive- und adaptive Streaming möglich', correct: false }
+                ]
+            },
+            {
+                id: 18,
+                type: 'multiple-choice',
+                title: 'Über welches Transportprotokoll erfolgt die Ablaufsteuerung?',
+                instruction: 'Wählen Sie das richtige Protokoll aus.',
+                options: [
+                    { text: 'UDP', correct: false },
+                    { text: 'TCP', correct: true }
+                ]
+            },
+            {
+                id: 19,
+                type: 'multiple-choice',
+                title: 'Welche Informationen werden mit der DESCRIBE-Methode beim RTSP-Protokoll unter anderem ausgetauscht?',
+                instruction: 'Wählen Sie alle zutreffenden Informationen aus.',
+                options: [
+                    { text: 'Client und Server Betriebssysteme', correct: false },
+                    { text: 'IP-Version', correct: false },
+                    { text: 'Audiocodec', correct: true },
+                    { text: 'Portnummer für die RTSP-Verbindung', correct: false },
+                    { text: 'Gemeinsame URL für A/V-Stream', correct: false },
+                    { text: 'Name der Session', correct: true },
+                    { text: 'Eigene URL für Media-Stream Video', correct: true },
+                    { text: 'Maximum Segment Size', correct: false },
+                    { text: 'Portnummern der RTP-Verbindung', correct: true },
+                    { text: 'Videoformat', correct: true }
+                ]
+            },
+            {
+                id: 20,
+                type: 'multiple-choice',
+                title: 'Wodurch kommen die Verzögerungen im progressiven Download im Vergleich zum Live-Stream zustande?',
+                instruction: 'Wählen Sie alle zutreffenden Faktoren aus.',
+                options: [
+                    { text: 'Delay', correct: false },
+                    { text: 'Slow-Start', correct: true },
+                    { text: 'Jitter', correct: false },
+                    { text: 'Playout-Buffer', correct: false },
+                    { text: 'secure level buffer', correct: true },
+                    { text: 'geringere Datenrate', correct: false },
+                    { text: 'Paketverlust', correct: true },
+                    { text: 'Retransmission', correct: true }
+                ]
+            },
+            {
+                id: 21,
+                type: 'true-false-table',
+                title: 'Welche der folgenden Aussagen zum HTML-5 video-tag sind in Bezug auf die Ablaufsteuerung richtig?',
+                instruction: 'Bewerten Sie jede Aussage als richtig oder falsch.',
+                statements: [
+                    { text: 'Grundlegende Steuerfunktionen können über eine API aufgerufen werden', correct: true },
+                    { text: 'Die Steuerfunktionen stehen für pseudo-Streaming und progressive Download zur Verfügung', correct: true },
+                    { text: 'Die HTML-5 Steuerfunktionen können alternativ zu RTSP verwendet werden', correct: true },
+                    { text: 'Die HTML-5 Steuerfunktionen können alternativ zu RTCP verwendet werden', correct: false }
+                ]
+            },
+            {
+                id: 22,
+                type: 'true-false-table',
+                title: 'Welche der folgenden Aussagen beschreibt das Konzept des Adaptive Bitrate Streamings richtig?',
+                instruction: 'Bewerten Sie jede Aussage als richtig oder falsch.',
+                statements: [
+                    { text: 'Es werden mehrere Präsentationen unterschiedlicher Qualität und Übertragungsrate auf Serverseite abgelegt, die im Verlauf des Streamings dynamisch dynamisch vom Player abgerufen werden', correct: true },
+                    { text: 'Es werden mehrere Präsentationen unterschiedlicher Qualität und Übertragungsrate auf Serverseite abgelegt, die vor Beginn des Streamings vom Player und oder Nutzer ausgewählt und abgerufen werden', correct: false },
+                    { text: 'Die Präsentationen haben unterschiedliche Frames per Second', correct: false },
+                    { text: 'Die Segmente der Präsentationen haben unterschiedliche Größen', correct: true }
+                ]
+            },
+            {
+                id: 23,
+                type: 'multiple-choice',
+                title: 'Welche sind nach dem heutigen Stand der Entwicklung die derzeit am häufigsten zum Einsatz kommenden Optimierungen für Streaming-Anwendungen',
+                instruction: 'Wählen Sie alle zutreffenden Optimierungen aus.',
+                options: [
+                    { text: 'Bandbreitensensitive Player', correct: true },
+                    { text: 'Größere Empfangspuffer auf Anwendungsebene', correct: false },
+                    { text: 'Adaption des slow-start Algorithmus bei der Congestion Control', correct: false },
+                    { text: 'Content Delivery Networks', correct: true },
+                    { text: 'Strict Routing Algorithmen', correct: false },
+                    { text: 'Vorhalten mehrerer Qualitätsstufen', correct: true },
+                    { text: 'Höhere Komprimierung der Videostreams', correct: true },
+                    { text: 'Einsatz von IPv6 mit verbesserter QoS Unterstützung', correct: false },
+                    { text: 'Verbesserte Quellkodierung', correct: true },
+                    { text: 'Einsatz von Pipelining', correct: false },
+                    { text: 'Cloud Streaming', correct: false },
+                    { text: 'Reflektoren', correct: true },
+                    { text: 'Einsatz von http/2', correct: false },
+                    { text: 'Verwendung von IGMPv3 statt IPv4', correct: false },
+                    { text: 'Layer 3 Anycast/Multicast', correct: true },
+                    { text: 'Layer 4 Anycast/Multicast', correct: false },
+                    { text: 'Einsatz von UDP statt TCP', correct: false },
+                    { text: 'Caching Edge Server', correct: true },
+                    { text: 'IP-Multicasting', correct: true }
+                ]
+            },
+            {
+                id: 24,
+                type: 'drag-drop',
+                title: 'Ordnen Sie zu.',
+                instruction: 'Ziehen Sie die Protokolle zu den entsprechenden Streaming-Methoden.',
+                items: [
+                    'UDP-Transport',
+                    'TCP-Transport', 
+                    'HTTP kann verwendet werden',
+                    'RTP',
+                    'RTSP',
+                    'RTCP',
+                    'Unicast',
+                    'Multicast',
+                    'Start des Player nach Erreichen eines Füllpuffers',
+                    'Start des Players nach Erhalt dekodierbarer Fragmente'
+                ],
+                zones: [
+                    { id: 'progressive', title: 'Progressive Download', items: ['TCP-Transport', 'HTTP kann verwendet werden', 'RTSP', 'Unicast', 'Start des Player nach Erreichen eines Füllpuffers'] },
+                    { id: 'pseudo', title: 'Pseudo-Streaming', items: ['TCP-Transport', 'HTTP kann verwendet werden', 'Unicast', 'Start des Players nach Erhalt dekodierbarer Fragmente'] },
+                    { id: 'live', title: 'Live-Streaming', items: ['UDP-Transport', 'RTP', 'RTSP', 'RTCP', 'Unicast', 'Multicast'] },
+                    { id: 'file', title: 'File Download', items: ['TCP-Transport', 'Unicast'] }
+                ],
+                allowMultiple: true
+            },
+            {
+                id: 25,
+                type: 'drag-drop',
+                title: 'Ordnen Sie den Kategorien zu.',
+                instruction: 'Ziehen Sie die Services zu den entsprechenden Streaming-Kategorien.',
+                items: [
+                    'T-Entertain',
+                    'Vorab-Auswahl der Videoqualität',
+                    'Pause-Funktion',
+                    'Ablaufsteuerung auf Serverseite',
+                    'Einsatz von ABR',
+                    'IP-Multicasting',
+                    'Übertragung von Metadaten zum Videostream',
+                    'Beliebiges Vorspulen',
+                    'Ablaufsteuerung auf Client-Seite',
+                    'Youtube',
+                    'Netflix',
+                    'Lokale Speicherung',
+                    'Twitch',
+                    'Skype'
+                ],
+                zones: [
+                    { id: 'live_streaming', title: 'Live-Streaming', items: ['T-Entertain', 'Vorab-Auswahl der Videoqualität', 'Pause-Funktion', 'Ablaufsteuerung auf Serverseite', 'IP-Multicasting', 'Skype'] },
+                    { id: 'pseudo_streaming', title: 'Pseudo-Streaming', items: ['Einsatz von ABR', 'Beliebiges Vorspulen', 'Pause-Funktion', 'Übertragung von Metadaten zum Videostream', 'Ablaufsteuerung auf Serverseite', 'Netflix', 'Lokale Speicherung'] },
+                    { id: 'progressive_streaming', title: 'Progressive Streaming', items: ['Vorab-Auswahl der Videoqualität', 'Pause-Funktion', 'Twitch', 'Ablaufsteuerung auf Client-Seite', 'Lokale Speicherung', 'Youtube', 'Skype'] }
+                ],
+                allowMultiple: true
+            },
+            {
+                id: 26,
+                type: 'drag-drop',
+                title: 'Ordnen Sie die Eigenschaften den drei Kategorien Unicast, Anycast und Multicast zu',
+                instruction: 'Ziehen Sie die Eigenschaften zu den entsprechenden Übertragungsarten.',
+                items: [
+                    'Punkt-zu Punkt Verbindung',
+                    'Punkt zu Multipunkt Verbindung',
+                    'Virtuelle-Verbindung',
+                    'Lastverteilung Server',
+                    'Georouting',
+                    'Paketvervielfältigung',
+                    'Redundanz auf Serverseite',
+                    'Ressourcenoptimierung (Übertragungskapazität)',
+                    'Spezielle/erweiterte Routing-Protokolle',
+                    'Einsatz bei pseudo-Streaming'
+                ],
+                zones: [
+                    { id: 'unicast', title: 'Unicast', items: ['Virtuelle-Verbindung', 'Einsatz bei pseudo-Streaming', 'Punkt-zu Punkt Verbindung'] },
+                    { id: 'anycast', title: 'Anycast', items: ['Virtuelle-Verbindung', 'Lastverteilung Server', 'Georouting', 'Spezielle/erweiterte Routing-Protokolle', 'Redundanz auf Serverseite', 'Einsatz bei pseudo-Streaming', 'Punkt-zu Punkt Verbindung'] },
+                    { id: 'multicast', title: 'Multicast', items: ['Punkt zu Multipunkt Verbindung', 'Paketvervielfältigung', 'Spezielle/erweiterte Routing-Protokolle', 'Ressourcenoptimierung (Übertragungskapazität)'] }
+                ],
+                allowMultiple: true
+            },
+            {
+                id: 27,
+                type: 'multiple-choice',
+                title: 'Welche Funktion hat das "Manifest"?',
+                instruction: 'Wählen Sie alle zutreffenden Funktionen aus.',
+                options: [
+                    { text: 'Gibt die Framerate vor', correct: true },
+                    { text: 'Beinhaltet die Identifikation der Repräsentationen', correct: true },
+                    { text: 'Enthalten für jede Repräsentation eine URI', correct: true },
+                    { text: 'Gibt das Zeitintervall vor', correct: true },
+                    { text: 'Kann im Zusammenhang mit UDP und TCP eingesetzt werden', correct: false },
+                    { text: 'Wird innerhalb des Streams übertragen', correct: false },
+                    { text: 'Beschreibt maximale Zeitintervalle für Adaption der Bitrate', correct: false },
+                    { text: 'Beschreibt minimale Zeitintervalle für Adaption der Bitrate', correct: true },
+                    { text: 'Gibt die Auflösung vor', correct: false }
+                ]
+            }
         ];
     }
 
@@ -470,8 +590,7 @@ class QuizApp {
     setupEventListeners() {
         document.getElementById('nextBtn').addEventListener('click', () => this.nextQuestion());
         document.getElementById('prevBtn').addEventListener('click', () => this.prevQuestion());
-        document.getElementById('checkBtn').addEventListener('click', () => this.checkCurrentAnswers());
-        document.getElementById('resetBtn').addEventListener('click', () => this.resetCurrentQuestion());
+        document.getElementById('homeBtn').addEventListener('click', () => this.showLandingPage());
         document.getElementById('reviewBtn').addEventListener('click', () => this.showReview());
         document.getElementById('restartBtn').addEventListener('click', () => this.restart());
     }
@@ -1285,12 +1404,13 @@ class QuizApp {
 
     updateProgress() {
         const progress = ((this.currentQuestion + 1) / this.questions.length) * 100;
-        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
         const progressText = document.getElementById('progressText');
         
         // Smooth progress bar animation
-        progressBar.style.setProperty('--progress', `${progress}%`);
-        progressBar.querySelector('::after').style.width = `${progress}%`;
+        if (progressFill) {
+            progressFill.style.width = `${progress}%`;
+        }
         
         // Enhanced progress text with percentage
         progressText.textContent = `Frage ${this.currentQuestion + 1} von ${this.questions.length} (${Math.round(progress)}%)`;
@@ -1310,7 +1430,6 @@ class QuizApp {
     updateNavigation() {
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
-        const checkBtn = document.getElementById('checkBtn');
         
         prevBtn.disabled = this.currentQuestion === 0;
         nextBtn.disabled = this.currentQuestion === this.questions.length - 1;
@@ -1322,16 +1441,6 @@ class QuizApp {
         } else {
             nextBtn.textContent = 'Weiter';
             nextBtn.style.background = '';
-        }
-        
-        // Update check button with smart text
-        const question = this.questions[this.currentQuestion];
-        if (question.type === 'drag-drop') {
-            checkBtn.textContent = 'Zuordnung prüfen';
-        } else if (question.type === 'fill-blank') {
-            checkBtn.textContent = 'Eingaben prüfen';
-        } else {
-            checkBtn.textContent = 'Antworten prüfen';
         }
     }
 
