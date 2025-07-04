@@ -169,7 +169,7 @@ class QuizApp {
         } else if (chapter === 'k3') {
             this.questions = this.initializeK3Questions();
             document.getElementById('quizTitle').textContent = 'Quiz K3 - Erweiterte Streaming-Technologien';
-            this.showToast('K3 Quiz gestartet - 12 Fragen', 'success');
+            this.showToast('K3 Quiz gestartet - 18 Fragen', 'success');
         }
 
         // Error handling for empty chapters
@@ -610,6 +610,83 @@ class QuizApp {
                 title: 'Quality of Experience (QoE)',
                 text: 'Die wichtigsten QoE-Metriken für Video-Streaming sind: {Startup-Delay}, {Rebuffering-Rate}, {Video-Qualität} und {Qualitätswechsel-Häufigkeit}.',
                 answer: 'Startup-Delay,Rebuffering-Rate,Video-Qualität,Qualitätswechsel-Häufigkeit'
+            },
+            {
+                id: 28,
+                type: 'true-false-table',
+                title: 'HTTP Live Streaming (HLS) und MPEG-DASH:',
+                instruction: 'Bewerten Sie die Aussagen zu modernen Streaming-Protokollen.',
+                statements: [
+                    { text: 'HLS wurde ursprünglich von Apple entwickelt', correct: true },
+                    { text: 'MPEG-DASH ist ein offener Standard', correct: true },
+                    { text: 'HLS funktioniert nur auf Apple-Geräten', correct: false },
+                    { text: 'Beide Protokolle unterstützen Adaptive Bitrate Streaming', correct: true }
+                ]
+            },
+            {
+                id: 29,
+                type: 'multiple-choice',
+                title: 'Streaming-Server Architekturen:',
+                instruction: 'Welche Aussagen zu Server-Architekturen sind korrekt?',
+                options: [
+                    { text: 'Origin-Server speichern die Master-Kopien der Inhalte', correct: true },
+                    { text: 'Edge-Server befinden sich näher zu den Endnutzern', correct: true },
+                    { text: 'Load Balancer verteilen Anfragen gleichmäßig', correct: true },
+                    { text: 'Streaming-Server benötigen keine Redundanz', correct: false },
+                    { text: 'Microservices-Architektur verbessert die Skalierbarkeit', correct: true }
+                ]
+            },
+            {
+                id: 30,
+                type: 'drag-drop',
+                title: 'Video-Qualitätsparameter zuordnen:',
+                instruction: 'Ordnen Sie die Parameter den entsprechenden Qualitätskategorien zu.',
+                items: [
+                    'Bitrate',
+                    'Auflösung',
+                    'Frame Rate',
+                    'Codec-Effizienz',
+                    'Latenz',
+                    'Jitter',
+                    'Packet Loss'
+                ],
+                zones: [
+                    { id: 'video_quality', title: 'Video-Qualität', items: ['Bitrate', 'Auflösung', 'Frame Rate', 'Codec-Effizienz'] },
+                    { id: 'network_quality', title: 'Netzwerk-Qualität', items: ['Latenz', 'Jitter', 'Packet Loss'] }
+                ]
+            },
+            {
+                id: 31,
+                type: 'fill-blank',
+                title: 'Streaming-Protokoll Ports',
+                text: 'RTSP verwendet standardmäßig Port {554}, während HTTP-Streaming über Port {80} oder {443} (HTTPS) läuft. RTP-Datenströme nutzen typischerweise Ports ab {5004}.',
+                answer: '554,80,443,5004'
+            },
+            {
+                id: 32,
+                type: 'true-false-table',
+                title: 'Moderne Streaming-Trends und Technologien:',
+                instruction: 'Bewerten Sie diese Aussagen zu aktuellen Entwicklungen.',
+                statements: [
+                    { text: '4K/8K Streaming erfordert deutlich höhere Bandbreiten', correct: true },
+                    { text: 'AI-basierte Video-Enhancement verbessert die Qualität in Echtzeit', correct: true },
+                    { text: 'Edge Computing reduziert Streaming-Latenz', correct: true },
+                    { text: '5G-Netzwerke haben keinen Einfluss auf Streaming-Qualität', correct: false }
+                ]
+            },
+            {
+                id: 33,
+                type: 'multiple-choice',
+                title: 'Live-Streaming Herausforderungen:',
+                instruction: 'Welche Faktoren sind besonders wichtig für Live-Streaming?',
+                options: [
+                    { text: 'Minimale End-to-End Latenz', correct: true },
+                    { text: 'Robuste Fehlerbehandlung bei Übertragungsfehlern', correct: true },
+                    { text: 'Dynamische Qualitätsanpassung', correct: true },
+                    { text: 'Vorab-Encoding aller Inhalte', correct: false },
+                    { text: 'Synchronisation von Audio und Video', correct: true },
+                    { text: 'Skalierung für variable Zuschauerzahlen', correct: true }
+                ]
             }
         ];
     }
