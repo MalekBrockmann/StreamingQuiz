@@ -5,25 +5,155 @@ class QuizApp {
         this.userAnswers = {};
         this.currentChapter = null;
         this.questions = [];
+        this.toastContainer = this.createToastContainer();
         this.initializeLandingPage();
+        this.setupKeyboardNavigation();
+    }
+
+    createToastContainer() {
+        const container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+        return container;
+    }
+
+    showToast(message, type = 'info', duration = 3000) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icons = {
+            success: '✅',
+            error: '❌',
+            warning: '⚠️',
+            info: 'ℹ️'
+        };
+        
+        toast.innerHTML = `
+            <span class="toast-icon">${icons[type]}</span>
+            <span class="toast-message">${message}</span>
+        `;
+        
+        this.toastContainer.appendChild(toast);
+        
+        // Auto-remove after duration
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.style.animation = 'toastSlideOut 0.3s ease forwards';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        this.toastContainer.removeChild(toast);
+                    }
+                }, 300);
+            }
+        }, duration);
+    }
+
+    setupKeyboardNavigation() {
+        document.addEventListener('keydown', (e) => {
+            // Only handle keyboard navigation when quiz is active
+            if (document.getElementById('quizInterface').style.display === 'none') return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        this.prevQuestion();
+                    }
+                    break;
+                case 'ArrowRight':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        this.nextQuestion();
+                    }
+                    break;
+                case 'Enter':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        this.checkCurrentAnswers();
+                    }
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    this.showLandingPage();
+                    break;
+                case 'r':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        this.resetCurrentQuestion();
+                    }
+                    break;
+            }
+        });
     }
 
     initializeLandingPage() {
         this.setupLandingPageEventListeners();
+        // Add keyboard shortcuts info
+        this.addKeyboardShortcutsInfo();
+    }
+
+    addKeyboardShortcutsInfo() {
+        // Add a small info box about keyboard shortcuts
+        const shortcutsInfo = document.createElement('div');
+        shortcutsInfo.className = 'shortcuts-info';
+        shortcutsInfo.innerHTML = `
+            <div style="position: fixed; bottom: 20px; left: 20px; background: rgba(255,255,255,0.9); 
+                        padding: 15px; border-radius: 10px; font-size: 0.9rem; max-width: 300px;
+                        box-shadow: 0 5px 15px rgba(0,0,0,0.1); backdrop-filter: blur(10px);">
+                <h4 style="margin: 0 0 10px 0; color: #333;">⌨️ Tastenkürzel:</h4>
+                <div style="color: #666;">
+                    <div><strong>Ctrl + ←/→</strong> Navigation</div>
+                    <div><strong>Ctrl + Enter</strong> Prüfen</div>
+                    <div><strong>Ctrl + R</strong> Reset</div>
+                    <div><strong>Esc</strong> Zurück zum Menü</div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(shortcutsInfo);
     }
 
     setupLandingPageEventListeners() {
-        // Chapter selection
+        // Chapter selection with enhanced feedback
         document.querySelectorAll('.chapter-card').forEach(card => {
             card.addEventListener('click', () => {
                 const chapter = card.dataset.chapter;
-                this.startChapter(chapter);
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.startChapter(chapter);
+                }, 150);
+            });
+
+            // Add ripple effect
+            card.addEventListener('mousedown', (e) => {
+                const ripple = document.createElement('div');
+                const rect = card.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                    z-index: 1;
+                `;
+                
+                card.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
             });
         });
 
         // Back to menu button
         document.getElementById('backToMenuBtn').addEventListener('click', () => {
             this.showLandingPage();
+            this.showToast('Zurück zum Hauptmenü', 'info');
         });
     }
 
@@ -35,9 +165,17 @@ class QuizApp {
         if (chapter === 'k1k2') {
             this.questions = this.initializeK1K2Questions();
             document.getElementById('quizTitle').textContent = 'Quiz K1 & K2 - Media Streaming';
+            this.showToast('K1 & K2 Quiz gestartet - 15 Fragen', 'success');
         } else if (chapter === 'k3') {
             this.questions = this.initializeK3Questions();
             document.getElementById('quizTitle').textContent = 'Quiz K3 - Erweiterte Streaming-Technologien';
+            this.showToast('K3 Quiz gestartet - 12 Fragen', 'success');
+        }
+
+        // Error handling for empty chapters
+        if (this.questions.length === 0) {
+            this.showToast('Fehler: Keine Fragen für dieses Kapitel gefunden!', 'error');
+            return;
         }
 
         this.showQuizInterface();
@@ -45,13 +183,29 @@ class QuizApp {
     }
 
     showLandingPage() {
-        document.getElementById('landingPage').style.display = 'flex';
-        document.getElementById('quizInterface').style.display = 'none';
+        const landingPage = document.getElementById('landingPage');
+        const quizInterface = document.getElementById('quizInterface');
+        
+        // Smooth transition
+        quizInterface.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+            quizInterface.style.display = 'none';
+            landingPage.style.display = 'flex';
+            landingPage.style.animation = 'fadeInUp 0.6s ease';
+        }, 300);
     }
 
     showQuizInterface() {
-        document.getElementById('landingPage').style.display = 'none';
-        document.getElementById('quizInterface').style.display = 'flex';
+        const landingPage = document.getElementById('landingPage');
+        const quizInterface = document.getElementById('quizInterface');
+        
+        // Smooth transition
+        landingPage.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+            landingPage.style.display = 'none';
+            quizInterface.style.display = 'flex';
+            quizInterface.style.animation = 'slideInFromRight 0.6s ease';
+        }, 300);
     }
 
     initializeK1K2Questions() {
@@ -301,7 +455,6 @@ class QuizApp {
 
     initializeK3Questions() {
         return [
-            // K3 Fragen werden hier hinzugefügt
             {
                 id: 16,
                 type: 'true-false-table',
@@ -313,8 +466,151 @@ class QuizApp {
                     { text: 'Die HTML-5 Steuerfunktionen können alternativ zu RTSP verwendet werden', correct: true },
                     { text: 'Die HTML-5 Steuerfunktionen können alternativ zu RTCP verwendet werden', correct: false }
                 ]
+            },
+            {
+                id: 17,
+                type: 'multiple-choice',
+                title: 'Was ist der Unterschied zwischen Progressive Download und True Streaming?',
+                instruction: 'Wählen Sie alle zutreffenden Aussagen aus.',
+                options: [
+                    { text: 'Progressive Download lädt die gesamte Datei vor dem Abspielen herunter', correct: false },
+                    { text: 'True Streaming ermöglicht Live-Übertragungen in Echtzeit', correct: true },
+                    { text: 'Progressive Download kann ohne spezielle Streaming-Server betrieben werden', correct: true },
+                    { text: 'True Streaming benötigt eine kontinuierliche Verbindung zum Server', correct: true },
+                    { text: 'Progressive Download speichert Daten im Browser-Cache', correct: true }
+                ]
+            },
+            {
+                id: 18,
+                type: 'drag-drop',
+                title: 'Ordnen Sie die Streaming-Protokolle ihren Eigenschaften zu:',
+                instruction: 'Ziehen Sie die Eigenschaften zu den entsprechenden Protokollen.',
+                items: [
+                    'Real-Time Transport',
+                    'HTTP-basiert',
+                    'Pufferverwaltung',
+                    'Bidirektionale Kommunikation',
+                    'Firewall-freundlich',
+                    'Quality of Service',
+                    'Session-Kontrolle'
+                ],
+                zones: [
+                    { id: 'rtsp', title: 'RTSP', items: ['Real-Time Transport', 'Bidirektionale Kommunikation', 'Quality of Service', 'Session-Kontrolle'] },
+                    { id: 'http', title: 'HTTP Streaming', items: ['HTTP-basiert', 'Firewall-freundlich', 'Pufferverwaltung'] }
+                ]
+            },
+            {
+                id: 19,
+                type: 'fill-blank',
+                title: 'Adaptive Bitrate Streaming',
+                text: 'Adaptive Bitrate Streaming passt die Videoqualität automatisch an die verfügbare {Bandbreite} an und verwendet dabei {Segmente} von typischerweise {2-10} Sekunden Länge.',
+                answer: 'Bandbreite,Segmente,2-10'
+            },
+            {
+                id: 20,
+                type: 'true-false-table',
+                title: 'Bewerten Sie die folgenden Aussagen zu Content Delivery Networks (CDN):',
+                instruction: 'Richtig oder falsch?',
+                statements: [
+                    { text: 'CDNs reduzieren die Latenz durch geografisch verteilte Server', correct: true },
+                    { text: 'Edge-Server speichern nur statische Inhalte', correct: false },
+                    { text: 'CDNs können die Serverauslastung des Origin-Servers reduzieren', correct: true },
+                    { text: 'Alle CDN-Requests werden immer zum Origin-Server weitergeleitet', correct: false }
+                ]
+            },
+            {
+                id: 21,
+                type: 'multiple-choice',
+                title: 'Welche Faktoren beeinflussen die Streaming-Qualität?',
+                instruction: 'Wählen Sie alle relevanten Faktoren aus.',
+                options: [
+                    { text: 'Verfügbare Bandbreite', correct: true },
+                    { text: 'Netzwerk-Latenz (RTT)', correct: true },
+                    { text: 'Puffergröße im Player', correct: true },
+                    { text: 'Bildschirmgröße des Endgeräts', correct: false },
+                    { text: 'Codec-Effizienz', correct: true },
+                    { text: 'Anzahl der gleichzeitigen Streams', correct: true }
+                ]
+            },
+            {
+                id: 22,
+                type: 'drag-drop',
+                title: 'Streaming-Optimierungen zuordnen:',
+                instruction: 'Ordnen Sie die Optimierungstechniken den Problembereichen zu.',
+                items: [
+                    'Adaptive Bitrate',
+                    'Preloading',
+                    'Compression',
+                    'Caching',
+                    'Load Balancing',
+                    'Content Prefetching'
+                ],
+                zones: [
+                    { id: 'bandwidth', title: 'Bandbreiten-Optimierung', items: ['Adaptive Bitrate', 'Compression'] },
+                    { id: 'latency', title: 'Latenz-Reduzierung', items: ['Caching', 'Content Prefetching', 'Preloading'] },
+                    { id: 'scalability', title: 'Skalierbarkeit', items: ['Load Balancing', 'Caching'] }
+                ],
+                allowMultiple: true
+            },
+            {
+                id: 23,
+                type: 'fill-blank',
+                title: 'DASH (Dynamic Adaptive Streaming over HTTP)',
+                text: 'DASH unterteilt Videos in {Segmente} und stellt ein {MPD} (Media Presentation Description) bereit, das {Bitrates} und {Auflösungen} für jedes Segment definiert.',
+                answer: 'Segmente,MPD,Bitrates,Auflösungen'
+            },
+            {
+                id: 24,
+                type: 'true-false-table',
+                title: 'WebRTC und Real-Time Streaming:',
+                instruction: 'Bewerten Sie die Aussagen zu WebRTC.',
+                statements: [
+                    { text: 'WebRTC ermöglicht Peer-to-Peer Kommunikation ohne Server', correct: false },
+                    { text: 'WebRTC verwendet UDP für Datenübertragung', correct: true },
+                    { text: 'WebRTC funktioniert nur in Chrome-Browsern', correct: false },
+                    { text: 'STUN/TURN-Server werden für NAT-Traversierung benötigt', correct: true }
+                ]
+            },
+            {
+                id: 25,
+                type: 'multiple-choice',
+                title: 'Video-Codecs und Kompression:',
+                instruction: 'Welche Aussagen zu Video-Codecs sind korrekt?',
+                options: [
+                    { text: 'H.264 ist ein verlustfreier Codec', correct: false },
+                    { text: 'H.265 bietet bessere Kompression als H.264', correct: true },
+                    { text: 'VP9 ist ein Open-Source Codec von Google', correct: true },
+                    { text: 'AV1 wurde speziell für Streaming optimiert', correct: true },
+                    { text: 'Alle Browser unterstützen alle Codecs nativ', correct: false }
+                ]
+            },
+            {
+                id: 26,
+                type: 'drag-drop',
+                title: 'Streaming-Technologien Timeline:',
+                instruction: 'Ordnen Sie die Technologien ihren Entwicklungsphasen zu.',
+                items: [
+                    'RealPlayer',
+                    'Flash Video',
+                    'HTML5 Video',
+                    'DASH',
+                    'WebRTC',
+                    'HLS'
+                ],
+                zones: [
+                    { id: 'early', title: 'Frühe Phase (1995-2005)', items: ['RealPlayer'] },
+                    { id: 'flash', title: 'Flash-Ära (2005-2015)', items: ['Flash Video'] },
+                    { id: 'html5', title: 'HTML5-Ära (2010-heute)', items: ['HTML5 Video', 'DASH', 'HLS'] },
+                    { id: 'webrtc', title: 'Real-Time Web (2015-heute)', items: ['WebRTC'] }
+                ]
+            },
+            {
+                id: 27,
+                type: 'fill-blank',
+                title: 'Quality of Experience (QoE)',
+                text: 'Die wichtigsten QoE-Metriken für Video-Streaming sind: {Startup-Delay}, {Rebuffering-Rate}, {Video-Qualität} und {Qualitätswechsel-Häufigkeit}.',
+                answer: 'Startup-Delay,Rebuffering-Rate,Video-Qualität,Qualitätswechsel-Häufigkeit'
             }
-            // Weitere K3-Fragen folgen...
         ];
     }
 
@@ -801,37 +1097,56 @@ class QuizApp {
 
     checkCurrentAnswers() {
         const question = this.questions[this.currentQuestion];
-        const questionContainer = document.querySelector('.question.active');
+        const container = document.querySelector('.question.active');
+        let correctCount = 0;
+        let totalCount = 0;
         
-        // Remove previous check results
-        questionContainer.classList.remove('checked');
-        const previousFeedbacks = questionContainer.querySelectorAll('.check-feedback');
-        previousFeedbacks.forEach(feedback => feedback.remove());
-        
-        // Remove missing indicators from previous checks
-        const missingIndicators = questionContainer.querySelectorAll('.dropped-item[style*="italic"]');
-        missingIndicators.forEach(indicator => indicator.remove());
-        
-        questionContainer.classList.add('checked');
+        // Remove any existing feedback
+        container.querySelectorAll('.check-feedback').forEach(el => el.remove());
+        container.classList.add('checked');
         
         switch (question.type) {
             case 'multiple-choice':
-                this.checkMultipleChoice(question, questionContainer);
+                ({ correctCount, totalCount } = this.checkMultipleChoice(question, container));
                 break;
             case 'true-false-table':
-                this.checkTrueFalseTable(question, questionContainer);
+                ({ correctCount, totalCount } = this.checkTrueFalseTable(question, container));
                 break;
             case 'drag-drop':
-                this.checkDragDrop(question, questionContainer);
+                ({ correctCount, totalCount } = this.checkDragDrop(question, container));
                 break;
             case 'fill-blank':
-                this.checkFillBlank(question, questionContainer);
+                ({ correctCount, totalCount } = this.checkFillBlank(question, container));
                 break;
         }
+        
+        // Enhanced feedback with detailed results
+        const percentage = Math.round((correctCount / totalCount) * 100);
+        let feedbackMessage = '';
+        let feedbackType = '';
+        
+        if (percentage === 100) {
+            feedbackMessage = `Perfekt! Alle ${totalCount} Antworten richtig! 🎉`;
+            feedbackType = 'success';
+        } else if (percentage >= 80) {
+            feedbackMessage = `Sehr gut! ${correctCount}/${totalCount} richtig (${percentage}%) 👏`;
+            feedbackType = 'success';
+        } else if (percentage >= 60) {
+            feedbackMessage = `Gut! ${correctCount}/${totalCount} richtig (${percentage}%) 👍`;
+            feedbackType = 'warning';
+        } else {
+            feedbackMessage = `${correctCount}/${totalCount} richtig (${percentage}%). Versuchen Sie es nochmal! 💪`;
+            feedbackType = 'error';
+        }
+        
+        this.showToast(feedbackMessage, feedbackType, 4000);
     }
 
     checkMultipleChoice(question, container) {
         const options = container.querySelectorAll('.answer-option');
+        let correctCount = 0;
+        let totalCount = 0;
+        
         options.forEach((option, index) => {
             const checkbox = option.querySelector('input');
             const isSelected = checkbox.checked;
@@ -843,19 +1158,27 @@ class QuizApp {
                 if (isCorrect) {
                     option.classList.add('correct-answer');
                     this.addCheckFeedback(option, '✓ Richtig', 'correct');
+                    correctCount++;
                 } else {
                     option.classList.add('incorrect-answer');
                     this.addCheckFeedback(option, '✗ Falsch', 'incorrect');
                 }
+                totalCount++;
             } else if (isCorrect) {
                 option.classList.add('incorrect-answer');
                 this.addCheckFeedback(option, '✗ Nicht ausgewählt (sollte richtig sein)', 'incorrect');
+                totalCount++;
             }
         });
+        
+        return { correctCount, totalCount };
     }
 
     checkTrueFalseTable(question, container) {
         const statements = container.querySelectorAll('.statement-row');
+        let correctCount = 0;
+        let totalCount = 0;
+        
         statements.forEach((row, index) => {
             const selectedRadio = row.querySelector('input[type="radio"]:checked');
             const trueRadio = row.querySelector('input[value="true"]');
@@ -871,20 +1194,25 @@ class QuizApp {
                 if (selectedValue === isCorrect) {
                     selectedRadio.parentElement.classList.add('correct-answer');
                     this.addCheckFeedback(selectedRadio.parentElement, '✓ Richtig', 'correct');
+                    correctCount++;
                 } else {
                     selectedRadio.parentElement.classList.add('incorrect-answer');
                     this.addCheckFeedback(selectedRadio.parentElement, '✗ Falsch', 'incorrect');
                 }
+                totalCount++;
             } else {
                 // No answer selected
                 const correctOption = isCorrect ? trueRadio.parentElement : falseRadio.parentElement;
                 correctOption.classList.add('incorrect-answer');
                 this.addCheckFeedback(correctOption, '✗ Nicht beantwortet', 'incorrect');
+                totalCount++;
             }
         });
+        
+        return { correctCount, totalCount };
     }
 
-        checkDragDrop(question, container) {
+    checkDragDrop(question, container) {
         // NEUE STRATEGIE: Erstelle eine Karte aller Items und ihrer aktuellen Positionen
         const allPlacedItems = new Map(); // item -> array of zones where it's placed
         const dropZones = container.querySelectorAll('.drop-zone');
@@ -960,6 +1288,8 @@ class QuizApp {
                 }
             }
         });
+        
+        return { correctCount: correctAnswers.size, totalCount: allPlacedItems.size };
     }
 
     checkFillBlank(question, container) {
@@ -972,9 +1302,11 @@ class QuizApp {
         if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
             input.classList.add('correct-answer');
             this.addCheckFeedback(input, '✓ Richtig', 'correct');
+            return { correctCount: 1, totalCount: 1 };
         } else {
             input.classList.add('incorrect-answer');
             this.addCheckFeedback(input, `✗ Falsch (Korrekt: ${correctAnswer})`, 'incorrect');
+            return { correctCount: 0, totalCount: 1 };
         }
     }
 
@@ -987,32 +1319,34 @@ class QuizApp {
 
     resetCurrentQuestion() {
         const question = this.questions[this.currentQuestion];
-        const questionContainer = document.querySelector('.question.active');
+        const container = document.querySelector('.question.active');
         
-        // Remove check styling and feedback
-        questionContainer.classList.remove('checked');
-        const feedbacks = questionContainer.querySelectorAll('.check-feedback');
-        feedbacks.forEach(feedback => feedback.remove());
+        // Remove checked state and feedback
+        container.classList.remove('checked');
+        container.querySelectorAll('.check-feedback').forEach(el => el.remove());
         
-        // Reset based on question type
         switch (question.type) {
             case 'multiple-choice':
-                this.resetMultipleChoice(questionContainer);
+                this.resetMultipleChoice(container);
                 break;
             case 'true-false-table':
-                this.resetTrueFalseTable(questionContainer);
+                this.resetTrueFalseTable(container);
                 break;
             case 'drag-drop':
-                this.resetDragDrop(questionContainer);
+                this.resetDragDrop(container);
                 break;
             case 'fill-blank':
-                this.resetFillBlank(questionContainer);
+                this.resetFillBlank(container);
                 break;
         }
         
-        // Clear from user answers and save
-        delete this.userAnswers[question.id];
-        this.saveToLocalStorage();
+        // Clear saved answers for this question
+        if (this.userAnswers[question.id]) {
+            delete this.userAnswers[question.id];
+            this.saveToLocalStorage();
+        }
+        
+        this.showToast('Frage zurückgesetzt', 'info', 2000);
     }
 
     resetMultipleChoice(container) {
@@ -1072,7 +1406,16 @@ class QuizApp {
             this.renderQuestion();
             this.updateProgress();
             this.updateNavigation();
+            
+            // Smooth scroll to top
+            document.getElementById('quizContainer').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+            
+            this.showToast(`Frage ${this.currentQuestion + 1} geladen`, 'info', 1500);
         } else {
+            // Quiz completed
             this.showResults();
         }
     }
@@ -1083,19 +1426,67 @@ class QuizApp {
             this.renderQuestion();
             this.updateProgress();
             this.updateNavigation();
+            
+            // Smooth scroll to top
+            document.getElementById('quizContainer').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+            
+            this.showToast(`Zurück zu Frage ${this.currentQuestion + 1}`, 'info', 1500);
         }
     }
 
     updateProgress() {
         const progress = ((this.currentQuestion + 1) / this.questions.length) * 100;
-        document.getElementById('progressBar').style.setProperty('--progress', `${progress}%`);
-        document.getElementById('progressText').textContent = `Frage ${this.currentQuestion + 1} von ${this.questions.length}`;
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        
+        // Smooth progress bar animation
+        progressBar.style.setProperty('--progress', `${progress}%`);
+        progressBar.querySelector('::after').style.width = `${progress}%`;
+        
+        // Enhanced progress text with percentage
+        progressText.textContent = `Frage ${this.currentQuestion + 1} von ${this.questions.length} (${Math.round(progress)}%)`;
+        
+        // Add completion milestone toasts
+        if (progress === 25) {
+            this.showToast('25% geschafft! Weiter so! 💪', 'success');
+        } else if (progress === 50) {
+            this.showToast('Halbzeit erreicht! 🎯', 'success');
+        } else if (progress === 75) {
+            this.showToast('75% geschafft! Fast am Ziel! 🚀', 'success');
+        } else if (progress === 100) {
+            this.showToast('Quiz komplett! Zeit für die Auswertung! 🎉', 'success');
+        }
     }
 
     updateNavigation() {
-        document.getElementById('prevBtn').disabled = this.currentQuestion === 0;
-        document.getElementById('nextBtn').textContent = 
-            this.currentQuestion === this.questions.length - 1 ? 'Quiz beenden' : 'Weiter';
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const checkBtn = document.getElementById('checkBtn');
+        
+        prevBtn.disabled = this.currentQuestion === 0;
+        nextBtn.disabled = this.currentQuestion === this.questions.length - 1;
+        
+        // Enhanced button text based on progress
+        if (this.currentQuestion === this.questions.length - 1) {
+            nextBtn.textContent = 'Quiz beenden';
+            nextBtn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+        } else {
+            nextBtn.textContent = 'Weiter';
+            nextBtn.style.background = '';
+        }
+        
+        // Update check button with smart text
+        const question = this.questions[this.currentQuestion];
+        if (question.type === 'drag-drop') {
+            checkBtn.textContent = 'Zuordnung prüfen';
+        } else if (question.type === 'fill-blank') {
+            checkBtn.textContent = 'Eingaben prüfen';
+        } else {
+            checkBtn.textContent = 'Antworten prüfen';
+        }
     }
 
     calculateScore() {
